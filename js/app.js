@@ -1,75 +1,103 @@
-(function () {
-  // =================================================
-  // 1) NAV active (현재 경로에 따라 active 표시)
-  // =================================================
-  const links = document.querySelectorAll(".nav a");
-  const path = location.pathname;
+/* =================================================
+   옵션B: 1920 기준 캔버스 스케일
+   - 창을 줄이면 전체가 비율대로 같이 줄어듭니다.
+================================================= */
+function applyCanvasScale() {
+  const canvases = document.querySelectorAll(".canvas");
+  canvases.forEach((canvas) => {
+    const baseWidth = 1920;
+    const vw = Math.min(window.innerWidth, document.documentElement.clientWidth);
 
-  links.forEach(a => {
-    const href = a.getAttribute("href") || "";
-    // 절대 URL도 포함해서 비교
-    if (href.includes("/design/") && path.includes("/design/")) a.classList.add("active");
-    else if (href.includes("/color-painting/") && path.includes("/color-painting/")) a.classList.add("active");
-    else if (href.includes("/ink-painting/") && path.includes("/ink-painting/")) a.classList.add("active");
-    else if ((href === "https://jalynneyh.github.io/" || href === "/") && (path === "/" || path === "/index.html")) a.classList.add("active");
+    // ✅ “잉크/컬러처럼” = 줄이면 같이 줄어듦
+    // 확대도 원하시면: const scale = vw / baseWidth; 로 바꾸시면 됩니다.
+    const scale = Math.min(1, vw / baseWidth);
+
+    canvas.style.setProperty("--scale", scale);
+
+    // ✅ 스케일된 높이만큼 canvas-stage에 높이 부여(푸터/스크롤 안정)
+    const h = parseFloat(canvas.getAttribute("data-height")) || 0;
+    const stage = canvas.closest(".canvas-stage");
+    if (stage && h) stage.style.height = (h * scale) + "px";
   });
+}
 
-  // =================================================
-  // 2) Canvas scale (옵션B: 1920 기준 스케일)
-  // =================================================
-  function applyCanvasScale() {
-    const canvases = document.querySelectorAll(".canvas");
-    canvases.forEach(canvas => {
-      const baseW = 1920;
-      const viewportW = document.documentElement.clientWidth;
-      const scale = Math.min(viewportW / baseW, 1);
+window.addEventListener("load", applyCanvasScale);
+window.addEventListener("resize", applyCanvasScale);
 
-      canvas.style.setProperty("--scale", scale.toString());
+/* =================================================
+   NAV ACTIVE AUTO
+================================================= */
+(function(){
+  const nav = document.getElementById("topNav");
+  if(!nav) return;
 
-      // stage 높이 확보 (푸터가 위로 올라오는 문제 방지)
-      const stage = canvas.closest(".canvas-stage") || canvas.closest(".stage");
-      const baseH = parseFloat(canvas.getAttribute("data-height") || "0");
-      const yShift = parseFloat(getComputedStyle(canvas).getPropertyValue("--yShift")) || 0;
+  const links = nav.querySelectorAll("a");
+  const here = location.href.replace(/\/+$/,"");
 
-      // yShift가 음수면 실제 필요한 높이가 줄어듦
-      const effectiveH = Math.max(0, baseH + yShift);
-      const scaledH = effectiveH * scale;
-
-      if (stage) {
-        stage.style.minHeight = `${scaledH}px`;
-      }
-    });
-  }
-  window.addEventListener("resize", applyCanvasScale);
-  window.addEventListener("load", applyCanvasScale);
-
-  // =================================================
-  // 3) Scroll to top
-  // =================================================
-  const btn = document.getElementById("scrollTopBtn");
-  if (btn) {
-    btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-  }
-
-  // =================================================
-  // 4) Main hero slider (존재할 때만)
-  // =================================================
-  const slider = document.querySelector(".hero-slider");
-  if (slider) {
-    const slides = Array.from(slider.querySelectorAll(".slide"));
-    const prev = slider.querySelector(".hero-control.prev");
-    const next = slider.querySelector(".hero-control.next");
-    let i = 0;
-
-    function show(n) {
-      slides[i].classList.remove("active");
-      i = (n + slides.length) % slides.length;
-      slides[i].classList.add("active");
+  links.forEach(a => a.classList.remove("active"));
+  links.forEach(a => {
+    const href = a.href.replace(/\/+$/,"");
+    if (here === href || (href !== a.origin + "/" && here.startsWith(href))) {
+      a.classList.add("active");
     }
+  });
+})();
 
-    if (prev) prev.addEventListener("click", () => show(i - 1));
-    if (next) next.addEventListener("click", () => show(i + 1));
+/* =================================================
+   SCROLL TO TOP
+================================================= */
+(function(){
+  const btn = document.getElementById("scrollTopBtn");
+  if(!btn) return;
+  btn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+})();
 
-    setInterval(() => show(i + 1), 5500);
+/* =================================================
+   HERO SLIDER (메인에만 있을 때만 동작)
+   - 자동재생 + 페이드 + 호버시 일시정지 + 화살표 클릭
+================================================= */
+(function(){
+  const slider = document.querySelector(".hero-slider");
+  const slides = document.querySelectorAll(".hero .slide");
+  const prev = document.querySelector(".hero-control.prev");
+  const next = document.querySelector(".hero-control.next");
+
+  if(!slider || slides.length === 0) return;
+
+  let index = 0;
+  const INTERVAL = 4500;
+  let timer = null;
+  let paused = false;
+
+  function show(i){
+    slides.forEach(s => s.classList.remove("active"));
+    slides[i].classList.add("active");
   }
+
+  function nextSlide(){
+    index = (index + 1) % slides.length;
+    show(index);
+  }
+
+  function prevSlide(){
+    index = (index - 1 + slides.length) % slides.length;
+    show(index);
+  }
+
+  function start(){
+    clearInterval(timer);
+    timer = setInterval(() => {
+      if(!paused) nextSlide();
+    }, INTERVAL);
+  }
+
+  start();
+
+  if(next) next.addEventListener("click", () => { nextSlide(); start(); });
+  if(prev) prev.addEventListener("click", () => { prevSlide(); start(); });
+
+  slider.addEventListener("mouseenter", () => paused = true);
+  slider.addEventListener("mouseleave", () => paused = false);
 })();
