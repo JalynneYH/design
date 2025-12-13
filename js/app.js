@@ -1,97 +1,75 @@
-/* =================================================
-   NAV ACTIVE AUTO
-================================================= */
-(function(){
-  const nav = document.getElementById("topNav");
-  if(!nav) return;
-  const links = nav.querySelectorAll("a");
-  const here = location.href.replace(/\/+$/,"");
+(function () {
+  // =================================================
+  // 1) NAV active (현재 경로에 따라 active 표시)
+  // =================================================
+  const links = document.querySelectorAll(".nav a");
+  const path = location.pathname;
 
-  links.forEach(a=>a.classList.remove("active"));
-  links.forEach(a=>{
-    const href = a.href.replace(/\/+$/,"");
-    if(here === href) a.classList.add("active");
+  links.forEach(a => {
+    const href = a.getAttribute("href") || "";
+    // 절대 URL도 포함해서 비교
+    if (href.includes("/design/") && path.includes("/design/")) a.classList.add("active");
+    else if (href.includes("/color-painting/") && path.includes("/color-painting/")) a.classList.add("active");
+    else if (href.includes("/ink-painting/") && path.includes("/ink-painting/")) a.classList.add("active");
+    else if ((href === "https://jalynneyh.github.io/" || href === "/") && (path === "/" || path === "/index.html")) a.classList.add("active");
   });
-})();
 
-/* =================================================
-   SCROLL TOP
-================================================= */
-(function(){
+  // =================================================
+  // 2) Canvas scale (옵션B: 1920 기준 스케일)
+  // =================================================
+  function applyCanvasScale() {
+    const canvases = document.querySelectorAll(".canvas");
+    canvases.forEach(canvas => {
+      const baseW = 1920;
+      const viewportW = document.documentElement.clientWidth;
+      const scale = Math.min(viewportW / baseW, 1);
+
+      canvas.style.setProperty("--scale", scale.toString());
+
+      // stage 높이 확보 (푸터가 위로 올라오는 문제 방지)
+      const stage = canvas.closest(".canvas-stage") || canvas.closest(".stage");
+      const baseH = parseFloat(canvas.getAttribute("data-height") || "0");
+      const yShift = parseFloat(getComputedStyle(canvas).getPropertyValue("--yShift")) || 0;
+
+      // yShift가 음수면 실제 필요한 높이가 줄어듦
+      const effectiveH = Math.max(0, baseH + yShift);
+      const scaledH = effectiveH * scale;
+
+      if (stage) {
+        stage.style.minHeight = `${scaledH}px`;
+      }
+    });
+  }
+  window.addEventListener("resize", applyCanvasScale);
+  window.addEventListener("load", applyCanvasScale);
+
+  // =================================================
+  // 3) Scroll to top
+  // =================================================
   const btn = document.getElementById("scrollTopBtn");
-  if(!btn) return;
-  btn.addEventListener("click", ()=>{
-    window.scrollTo({top:0, behavior:"smooth"});
-  });
-})();
+  if (btn) {
+    btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  }
 
-/* =================================================
-   OPTION B: 1920 기준 캔버스 스케일 + Y 오프셋
-   - data-height: 캔버스 원본 높이(px)
-   - data-offset: Y 오프셋(px, 음수면 위로 당김)
-================================================= */
-function applyCanvasScale(){
-  document.querySelectorAll(".canvas").forEach(canvas=>{
-    const baseW = 1920;
-    const scale = window.innerWidth / baseW;
-
-    const h = parseFloat(canvas.dataset.height || "0");
-    const offset = parseFloat(canvas.dataset.offset || "0");
-
-    // ✅ 스케일 + 오프셋(같이 스케일)
-    canvas.style.transform = `translateY(${offset * scale}px) scale(${scale})`;
-
-    // ✅ 부모 높이를 “스케일 반영”으로 잡아서 스크롤/클릭 꼬임 방지
-    const wrap = canvas.closest(".canvas-wrap");
-    if(wrap && h){
-      const visibleH = (h + offset) * scale; // offset이 음수면 줄어듦
-      wrap.style.height = Math.max(0, visibleH) + "px";
-    }
-  });
-}
-window.addEventListener("resize", applyCanvasScale);
-applyCanvasScale();
-
-/* =================================================
-   HERO SLIDER (메인에만 존재)
-   - 자동재생
-   - hover 시 일시정지
-   - 좌우 클릭 가능
-================================================= */
-(function(){
+  // =================================================
+  // 4) Main hero slider (존재할 때만)
+  // =================================================
   const slider = document.querySelector(".hero-slider");
-  const slides = document.querySelectorAll(".hero .slide");
-  const prev = document.querySelector(".hero-control.prev");
-  const next = document.querySelector(".hero-control.next");
-  if(!slider || slides.length === 0) return;
+  if (slider) {
+    const slides = Array.from(slider.querySelectorAll(".slide"));
+    const prev = slider.querySelector(".hero-control.prev");
+    const next = slider.querySelector(".hero-control.next");
+    let i = 0;
 
-  let idx = 0;
-  const INTERVAL = 4500;
-  let timer = null;
-  let paused = false;
+    function show(n) {
+      slides[i].classList.remove("active");
+      i = (n + slides.length) % slides.length;
+      slides[i].classList.add("active");
+    }
 
-  function show(i){
-    slides.forEach(s=>s.classList.remove("active"));
-    slides[i].classList.add("active");
+    if (prev) prev.addEventListener("click", () => show(i - 1));
+    if (next) next.addEventListener("click", () => show(i + 1));
+
+    setInterval(() => show(i + 1), 5500);
   }
-  function nextSlide(){
-    idx = (idx + 1) % slides.length;
-    show(idx);
-  }
-  function prevSlide(){
-    idx = (idx - 1 + slides.length) % slides.length;
-    show(idx);
-  }
-
-  function start(){
-    clearInterval(timer);
-    timer = setInterval(()=>{ if(!paused) nextSlide(); }, INTERVAL);
-  }
-  start();
-
-  if(next) next.addEventListener("click", ()=>{ nextSlide(); start(); });
-  if(prev) prev.addEventListener("click", ()=>{ prevSlide(); start(); });
-
-  slider.addEventListener("mouseenter", ()=> paused = true);
-  slider.addEventListener("mouseleave", ()=> paused = false);
 })();
