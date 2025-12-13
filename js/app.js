@@ -1,44 +1,38 @@
 /* =================================================
-   옵션B: 1920 기준 캔버스 스케일
-   - 창을 줄이면 전체가 비율대로 같이 줄어듭니다.
-================================================= */
-function applyCanvasScale() {
-  const canvases = document.querySelectorAll(".canvas");
-  canvases.forEach((canvas) => {
-    const baseWidth = 1920;
-    const vw = Math.min(window.innerWidth, document.documentElement.clientWidth);
-
-    // ✅ “잉크/컬러처럼” = 줄이면 같이 줄어듦
-    // 확대도 원하시면: const scale = vw / baseWidth; 로 바꾸시면 됩니다.
-    const scale = Math.min(1, vw / baseWidth);
-
-    canvas.style.setProperty("--scale", scale);
-
-    // ✅ 스케일된 높이만큼 canvas-stage에 높이 부여(푸터/스크롤 안정)
-    const h = parseFloat(canvas.getAttribute("data-height")) || 0;
-    const stage = canvas.closest(".canvas-stage");
-    if (stage && h) stage.style.height = (h * scale) + "px";
-  });
-}
-
-window.addEventListener("load", applyCanvasScale);
-window.addEventListener("resize", applyCanvasScale);
-
-/* =================================================
    NAV ACTIVE AUTO
+   - MAIN(/)은 진짜 메인 페이지에서만 active
+   - 디자인/컬러/잉크에서는 해당 메뉴만 active
 ================================================= */
-(function(){
+(function () {
   const nav = document.getElementById("topNav");
-  if(!nav) return;
+  if (!nav) return;
 
   const links = nav.querySelectorAll("a");
-  const here = location.href.replace(/\/+$/,"");
 
-  links.forEach(a => a.classList.remove("active"));
-  links.forEach(a => {
-    const href = a.href.replace(/\/+$/,"");
-    if (here === href || (href !== a.origin + "/" && here.startsWith(href))) {
-      a.classList.add("active");
+  // 현재 경로 (뒤 슬래시 제거)
+  const currentPath =
+    location.pathname.replace(/\/+$/, "") || "/";
+
+  links.forEach((link) => link.classList.remove("active"));
+
+  links.forEach((link) => {
+    const linkPath =
+      new URL(link.href).pathname.replace(/\/+$/, "") || "/";
+
+    // ✅ MAIN은 루트('/')일 때만 active
+    if (linkPath === "/") {
+      if (currentPath === "/") {
+        link.classList.add("active");
+      }
+      return;
+    }
+
+    // ✅ 그 외 페이지들
+    if (
+      currentPath === linkPath ||
+      currentPath.startsWith(linkPath + "/")
+    ) {
+      link.classList.add("active");
     }
   });
 })();
@@ -46,58 +40,47 @@ window.addEventListener("resize", applyCanvasScale);
 /* =================================================
    SCROLL TO TOP
 ================================================= */
-(function(){
+(function () {
   const btn = document.getElementById("scrollTopBtn");
-  if(!btn) return;
+  if (!btn) return;
+
   btn.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 })();
 
 /* =================================================
-   HERO SLIDER (메인에만 있을 때만 동작)
-   - 자동재생 + 페이드 + 호버시 일시정지 + 화살표 클릭
+   OPTION B : CANVAS SCALE (축소만 허용)
+   - 창 줄이면 비율 유지하며 같이 줄어듦
+   - 창 키워도 확대되지 않음
 ================================================= */
-(function(){
-  const slider = document.querySelector(".hero-slider");
-  const slides = document.querySelectorAll(".hero .slide");
-  const prev = document.querySelector(".hero-control.prev");
-  const next = document.querySelector(".hero-control.next");
+function applyCanvasScale() {
+  const canvases = document.querySelectorAll(".canvas");
 
-  if(!slider || slides.length === 0) return;
+  canvases.forEach((canvas) => {
+    const BASE_WIDTH = 1920;
+    const vw = Math.min(
+      window.innerWidth,
+      document.documentElement.clientWidth
+    );
 
-  let index = 0;
-  const INTERVAL = 4500;
-  let timer = null;
-  let paused = false;
+    // ✅ 핵심: 1보다 커지지 않게
+    const scale = Math.min(1, vw / BASE_WIDTH);
+    canvas.style.setProperty("--scale", scale);
 
-  function show(i){
-    slides.forEach(s => s.classList.remove("active"));
-    slides[i].classList.add("active");
-  }
+    // 스크롤/푸터 안정용 높이 계산
+    const h =
+      parseFloat(canvas.getAttribute("data-height")) ||
+      canvas.offsetHeight ||
+      0;
 
-  function nextSlide(){
-    index = (index + 1) % slides.length;
-    show(index);
-  }
+    const stage = canvas.closest(".canvas-stage");
+    if (stage && h) {
+      stage.style.height = h * scale + "px";
+    }
+  });
+}
 
-  function prevSlide(){
-    index = (index - 1 + slides.length) % slides.length;
-    show(index);
-  }
-
-  function start(){
-    clearInterval(timer);
-    timer = setInterval(() => {
-      if(!paused) nextSlide();
-    }, INTERVAL);
-  }
-
-  start();
-
-  if(next) next.addEventListener("click", () => { nextSlide(); start(); });
-  if(prev) prev.addEventListener("click", () => { prevSlide(); start(); });
-
-  slider.addEventListener("mouseenter", () => paused = true);
-  slider.addEventListener("mouseleave", () => paused = false);
-})();
+window.addEventListener("load", applyCanvasScale);
+window.addEventListener("resize", applyCanvasScale);
+applyCanvasScale();
