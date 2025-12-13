@@ -1,0 +1,214 @@
+/* =================================================
+   GLOBAL RESET & BASE
+================================================= */
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; }
+body{
+  background:#111; /* ✅ 메인도 부드러운 블랙 */
+  color:#fff;
+  font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+  overflow-x:hidden;
+}
+a{ color:inherit; text-decoration:none; }
+img{ -webkit-user-drag:none; user-select:none; }
+
+/* =================================================
+   HEADER / NAV (화면폭 따라 자연스럽게)
+================================================= */
+.header{
+  width:100%;
+  height:90px;
+  padding:0 48px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.logo img{
+  height:56px; /* ✅ 로고 크게 */
+  display:block;
+}
+.nav{ display:flex; gap:28px; }
+.nav a{
+  font-size:12px;
+  letter-spacing:0.08em;
+  color:#8c8c8c;
+  transition:color .25s ease;
+}
+.nav a:hover,
+.nav a.active{ color:#fff; }
+
+/* =================================================
+   MAIN HERO / SLIDER (메인만)
+================================================= */
+.hero{ position:relative; width:100%; overflow:hidden; }
+.hero-slider{
+  position:relative;
+  height:90vh;
+  min-height:520px;
+}
+.hero .slide{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 1.2s ease-in-out; /* ✅ 페이드 */
+}
+.hero .slide.active{ opacity:1; pointer-events:auto; z-index:1; }
+.hero .slide img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+/* 좌우 클릭 영역 */
+.hero-control{
+  position:absolute;
+  top:0;
+  width:50%;
+  height:100%;
+  cursor:pointer;
+  z-index:10;
+}
+.hero-control.prev{ left:0; }
+.hero-control.next{ right:0; }
+.hero-arrow{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:40px;
+  opacity:0.35;
+  transition:opacity .25s ease;
+  color:#fff;
+}
+.hero-control.prev .hero-arrow{ left:32px; }
+.hero-control.next .hero-arrow{ right:32px; }
+.hero-control:hover .hero-arrow{ opacity:1; }
+
+/* ✅ 슬라이더 아래 간격: “로고 2개 정도” 체감 = 80px */
+.after-hero-gap{ height:80px; }
+
+/* =================================================
+   CANVAS / THUMBNAILS (옵션B: 1920 기준 좌표 스케일)
+================================================= */
+.stage{ width:100%; }
+.canvas-wrap{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  /* JS가 높이 잡아줌 */
+}
+.canvas{
+  position:relative;
+  width:1920px;            /* 기준 폭 */
+  transform-origin:top left;
+}
+
+/* 썸네일 공통 */
+.thumb{ position:absolute; overflow:hidden; }
+.thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  transition:transform .6s ease, opacity .6s ease;
+}
+.thumb:hover img{
+  transform:scale(1.04);
+  opacity:0.75;
+}
+
+/* =================================================
+   SCROLL TOP (원형 + 흰 화살표)
+================================================= */
+.scroll-top-btn{
+  position:fixed;
+  right:40px;
+  bottom:40px;
+  width:44px;
+  height:44px;
+  border-radius:9999px;
+  border:1px solid rgba(255,255,255,.4);
+  background:rgba(0,0,0,.45);
+  color:#fff;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:100;
+  transition:background-color .25s ease;
+}
+.scroll-top-btn span{
+  color:#fff;
+  font-size:18px;
+  line-height:1;
+}
+.scroll-top-btn:hover{ background:rgba(255,255,255,.12); }
+
+/* =================================================
+   FOOTER (4페이지 공통, 너무 크지 않게)
+================================================= */
+.footer{
+  text-align:center;
+  color:#fff;
+  font-size:12px;       /* ✅ 네비바 수준 */
+  letter-spacing:0.02em;
+  font-weight:700;
+  font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+  padding:80px 12px 40px; /* ✅ 더 아래로 80px + 아래 40px */
+}
+
+/* =================================================
+   DETAIL (공통 템플릿)
+================================================= */
+.detail-hero{
+  position:relative;
+  width:100%;
+  height:92vh;
+  min-height:520px;
+  overflow:hidden;
+  background:#111;
+}
+.detail-hero .dslide{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transition:opacity .9s ease-in-out;
+}
+.detail-hero .dslide.active{ opacity:1; }
+.detail-hero img{
+  width:100%;
+  height:100%;
+  object-fit:contain; /* ✅ 잘리지 않게 */
+  display:block;
+}
+.detail-btn{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:44px;
+  color:#fff;
+  opacity:.7;
+  cursor:pointer;
+  padding:12px;
+  user-select:none;
+}
+.detail-btn:hover{ opacity:1; }
+.detail-btn.prev{ left:18px; }
+.detail-btn.next{ right:18px; }
+
+.detail-body{
+  max-width:860px;
+  margin:0 auto;
+  padding:28px 20px 10px;
+}
+.detail-meta{
+  font-size:12px;
+  opacity:.9;
+}
+.detail-text{
+  margin-top:18px;
+  font-size:12px;
+  line-height:1.8;
+  opacity:.9;
+  white-space:pre-wrap; /* ✅ 줄바꿈 유지 */
+}

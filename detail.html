@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>LEE YUNHA – DETAIL</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+
+<body>
+<header class="header">
+  <a href="index.html" class="logo" style="font-size:12px;letter-spacing:.08em;color:#fff;">BACK</a>
+  <nav class="nav" id="topNav">
+    <a href="https://jalynneyh.github.io/">MAIN</a>
+    <a href="https://jalynneyh.github.io/design/">DESIGN</a>
+    <a href="https://jalynneyh.github.io/color-painting/">COLOR PAINTING</a>
+    <a href="https://jalynneyh.github.io/ink-painting/">INK PAINTING</a>
+  </nav>
+</header>
+
+<section class="detail-hero" id="detailHero">
+  <div class="detail-btn prev" id="dPrev">&#10094;</div>
+  <div class="detail-btn next" id="dNext">&#10095;</div>
+</section>
+
+<div class="detail-body">
+  <div class="detail-meta" id="detailMeta"></div>
+  <div class="detail-text" id="detailText"></div>
+</div>
+
+<div class="footer">© 2025 LEE YUNHA. All rights reserved.</div>
+<button class="scroll-top-btn" id="scrollTopBtn"><span>&uarr;</span></button>
+
+<script src="js/app.js"></script>
+<script>
+/* =================================================
+   ✅ 디테일 데이터 관리 방법 (윤하님이 수정하는 곳)
+   - images: 해당 작품 이미지 장 수
+   - text: 설명(줄바꿈 유지됨)
+================================================= */
+const DETAIL_DATA = {
+  // 예시:
+  // design: { "1": { images: 3, text: "설명..." } },
+  // color:  { "1": { images: 1, text: "설명..." } },
+  // ink:    { "8": { images: 1, text: "설명..." } },
+};
+
+function getData(type, id){
+  const t = DETAIL_DATA[type] || {};
+  return t[id] || { images: 1, text: "여기에 작품 설명을 입력하시면 됩니다." };
+}
+
+const p = new URLSearchParams(location.search);
+const type = (p.get("type") || "").toLowerCase();  // main / design / color / ink
+const id = p.get("id") || "1";
+
+const data = getData(type, id);
+
+document.getElementById("detailMeta").innerText =
+  `${type.toUpperCase()} · #${id}`;
+
+document.getElementById("detailText").innerText = data.text;
+
+// 슬라이드 생성: assets/{type}/detail/{id}-{nn}.png
+const hero = document.getElementById("detailHero");
+let slides = [];
+let idx = 0;
+
+for(let i=1;i<=data.images;i++){
+  const nn = String(i).padStart(2,"0");
+  const el = document.createElement("div");
+  el.className = "dslide" + (i===1 ? " active" : "");
+  el.innerHTML = `<img src="assets/${type}/detail/${id}-${nn}.png" alt="">`;
+  hero.appendChild(el);
+  slides.push(el);
+}
+
+function show(i){
+  slides.forEach(s=>s.classList.remove("active"));
+  slides[i].classList.add("active");
+}
+
+const prev = document.getElementById("dPrev");
+const next = document.getElementById("dNext");
+
+function hasMulti(){ return slides.length > 1; }
+prev.style.display = hasMulti() ? "block" : "none";
+next.style.display = hasMulti() ? "block" : "none";
+
+prev.addEventListener("click", ()=>{
+  if(!hasMulti()) return;
+  idx = (idx - 1 + slides.length) % slides.length;
+  show(idx);
+});
+next.addEventListener("click", ()=>{
+  if(!hasMulti()) return;
+  idx = (idx + 1) % slides.length;
+  show(idx);
+});
+</script>
+</body>
+</html>
