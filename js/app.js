@@ -142,3 +142,93 @@ window.addEventListener("resize", applyCanvasScale);
   slider.addEventListener("mouseenter", () => paused = true);
   slider.addEventListener("mouseleave", () => paused = false);
 })();
+
+/* =================================================
+   DESIGN DETAIL DATA
+   - 윤하님은 이 블록만 채우면 됩니다
+================================================= */
+
+const DESIGN_DATA = {
+  1: {
+    images: [
+      "/assets/design/detail-01-01.png",
+      // "/assets/design/detail-01-02.png",  // 있으면 추가
+    ],
+    meta: "haing · 2020",
+    text: `
+`
+  },
+
+  2: {
+    images: [
+      "/assets/design/detail-02-01.png",
+    ],
+    meta: "Design · 2024",
+    text: `
+디자인 2번 설명 원고
+여기도 그대로 붙여넣기만 하시면 됩니다.
+`
+  },
+
+  3: {
+    images: [
+      "/assets/design/detail-03-01.png",
+    ],
+    meta: "Design · 2023",
+    text: `
+디자인 3번 설명
+`
+  },
+
+  4: {
+    images: [
+      "/assets/design/detail-04-01.png",
+    ],
+    meta: "Design · 2023",
+    text: `
+디자인 4번 설명
+`
+  },
+
+  5: {
+    images: [
+      "/assets/design/detail-05-01.png",
+    ],
+    meta: "Design · 2023",
+    text: `
+디자인 5번 설명
+`
+  },
+
+  6: {
+    images: [
+      "/assets/design/detail-06-01.png",
+    ],
+    meta: "Design · 2022",
+    text: `
+디자인 6번 설명
+`
+  },
+
+  7: {
+    images: [
+      "/assets/design/detail-07-01.png",
+    ],
+    meta: "Design · 2022",
+    text: `
+디자인 7번 설명
+`
+  },
+
+  8: {
+    images: [
+      "/assets/design/detail-08-01.png",
+      // "/assets/design/detail-08-02.png",
+    ],
+    meta: "Design · 2022",
+    text: `
+디자인 8번 설명
+여러 이미지여도 자동 슬라이드로 표시됩니다.
+`
+  }
+};
